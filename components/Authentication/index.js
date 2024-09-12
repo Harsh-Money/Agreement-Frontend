@@ -1,9 +1,9 @@
 import { createElement, useState } from "react";
 import LoginForm from "./Login";
 import { Box, Heading, Input, InputGroup, InputLeftElement, InputRightElement, Text, VStack } from "@chakra-ui/react";
-import { AddIcon, EmailIcon, UnlockIcon, ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
+import { AddIcon, EmailIcon, PhoneIcon, UnlockIcon, ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import Login from "./Login";
-import Signup from "./SignUpForm";
+import Signup from "./SignUp";
 
 export const NameInput = (fieldProps) => {
     return (
@@ -68,6 +68,46 @@ export const NameInput = (fieldProps) => {
           {showPassword ? 
           (<><ViewIcon /></>):(<><ViewOffIcon /></>)}
         </InputRightElement>
+      </InputGroup>
+    );
+  };
+
+  export const ContactNo = (fieldProps) => {
+    return (
+      <InputGroup size={"lg"}>
+        <InputLeftElement pointerEvents="none">
+          <PhoneIcon />
+        </InputLeftElement>
+        <Input
+          pl={12}
+          type="phone"
+          name="Phone No"
+          placeholder="Phone Number"
+          _focusVisible={{
+            borderColor: "primary.500",
+          }}
+          {...fieldProps}
+        />
+      </InputGroup>
+    );
+  };
+
+  export const ImageFile = (fieldProps) => {
+    return (
+      <InputGroup size={"lg"}>
+        <InputLeftElement pointerEvents="none">
+          <PhoneIcon />
+        </InputLeftElement>
+        <Input
+          pl={12}
+          type="file"
+          name="image"
+          placeholder="Agreement image"
+          _focusVisible={{
+            borderColor: "primary.500",
+          }}
+          {...fieldProps}
+        />
       </InputGroup>
     );
   };

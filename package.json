@@ -4,13 +4,16 @@
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
-    "@tanstack/react-query": "^5.55.0",
+    "custom-hooks": "^0.0.0",
     "formik": "^2.4.6",
     "framer-motion": "^11.5.4",
-    "next": "^14.2.8",
+    "next": "^14.2.9",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "yup": "^1.4.0"
+    "react-query": "^3.39.3",
+    "url-join": "^5.0.0",
+    "yup": "^1.4.0",
+    "zustand": "^4.5.5"
   },
   "scripts": {
     "dev": "next dev",

@@ -6,44 +6,82 @@ import {
   FormControl,
   FormErrorMessage,
   Stack,
+  useTimeout,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
-import { EmailInput, PasswordInput } from ".";
+import { EmailInput, NameInput, PasswordInput } from ".";
+import { useMutation } from "react-query";
+import AuthenticationService from "../../services/authentication.service";
+import { useUserStore } from "../../stores/user.store";
+import { useRouter } from "next/router";
+import OverviewServices from "../../services/overview.service";
+import LocalStorageService from "../../services/localstorage.service";
 
 const LoginSchema = Yup.object({
   name: Yup.string()
-    .max(15, "Must be 15 characters or less")
-    .required("Required"),
-  email: Yup.string().email("Invalid Email").required("Email is required"),
+        .max(30, "Must be 30 characters or less")
+        .required("Required"),
   password: Yup.string()
     .required("Password is required")
-    .min(6, "Password is too short"),
+    .min(3, "Password is too short"),
 });
 
 function Login({ closeModal }) {
-  // const formik = useFormik({
-  //     initialValues: {
-  //         name: '',
-  //       password: '',
-  //       email: '',
-  //       contact_no: '',
-  //       roles: []
-  //     },
-  //     validationSchema: Yup.object({
-  //       firstName: Yup.string()
-  //         .max(15, 'Must be 15 characters or less')
-  //         .required('Required'),
-  //       lastName: Yup.string()
-  //         .max(20, 'Must be 20 characters or less')
-  //         .required('Required'),
-  //       email: Yup.string().email('Invalid email address').required('Required'),
-  //     }),
-  //     onSubmit: values => {
-  //       alert(JSON.stringify(values, null, 3));
-  //     },
-  //   });
+
+  const router = useRouter();
+  const currentUrl = router.asPath;
+  const toast = useToast();
+  const {setUserData, userData, clearUserData } = useUserStore((state) => state);
+
+
+  const { mutate: dataForLogin } = useMutation(AuthenticationService.loginClientWithUsername, {
+    onSuccess: async (data) => {
+      clearUserData();
+      LocalStorageService.remove("jwtToken");
+      await new Promise((resolve) => {
+    // Ensure data is valid
+          if (data && data.token) {
+            setUserData({ jwtToken: data.token });
+            LocalStorageService.set("jwtToken", data.token);
+          } else {
+            console.error("Invalid data received");
+          }
+      
+        resolve(); 
+      });
+        toast({
+          title: 'Login Successful',
+          description: `Driving To Overview.....`,
+          status: 'success',
+          duration: 2000,
+          position: 'top',
+          isClosable: true,
+        })
+        
+        router.push('/overview');
+  },
+  onError: (error) => {
+    console.log(error);
+    toast({
+      title: 'Login un-Successful',
+      description: "You are not logedIn now.",
+      status: 'error',
+      duration: 2000,
+      position: 'top',
+      isClosable: true,
+    })
+  }
+}
+)
 
   const handleLogin = async (formdata) => {
+    const data = {
+      name: formdata.name,
+      password: formdata.password
+    }
+    LocalStorageService.remove("jwtToken");
+    dataForLogin(data);
     closeModal();
     // Api to check whether user is present or not; use formdata.name, formdata.password
   };
@@ -51,11 +89,13 @@ function Login({ closeModal }) {
   return (
     <Formik
       initialValues={{
-        email: "",
+        name: "",
         password: "",
       }}
       validationSchema={LoginSchema}
-      onSubmit={handleLogin}
+      onSubmit={(values) => {
+        handleLogin(values);
+      }}
     >
       {({ handleSubmit, errors, touched, getFieldProps }) => (
         <VStack
@@ -64,9 +104,9 @@ function Login({ closeModal }) {
           as="form"
           onSubmit={handleSubmit}
         >
-          <FormControl isInvalid={errors.email && touched.email}>
-            <EmailInput {...getFieldProps("email")} />
-            <FormErrorMessage>{errors.email}</FormErrorMessage>
+          <FormControl isInvalid={errors.name && touched.name}>
+            <NameInput {...getFieldProps("name")} />
+            <FormErrorMessage>{errors.name}</FormErrorMessage>
           </FormControl>
 
           <FormControl isInvalid={errors.password && touched.password}>
@@ -74,9 +114,9 @@ function Login({ closeModal }) {
             <FormErrorMessage>{errors.password}</FormErrorMessage>
           </FormControl>
           <Stack direction={["column", "row"]} w="full" spacing={5}>
-            <Button type="submit" variant="primary">
+          <Button type="submit" variant="primary" color={"#FFD76F"} bg={"grey"}>
               Login
-            </Button>
+          </Button>
           </Stack>
         </VStack>
       )}
