@@ -1,7 +1,7 @@
 import { ChakraProvider } from "@chakra-ui/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import theme from "../theme";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 export default function App({ Component, pageProps }) {
 
