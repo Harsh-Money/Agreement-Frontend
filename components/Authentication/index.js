@@ -96,7 +96,7 @@ export const NameInput = (fieldProps) => {
     return (
       <InputGroup size={"lg"}>
         <InputLeftElement pointerEvents="none">
-          <PhoneIcon />
+          
         </InputLeftElement>
         <Input
           pl={12}

@@ -1,6 +1,12 @@
 import { Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text, useDisclosure } from "@chakra-ui/react";
+import ClientAgreementForm from "../AgreementForm/ClientAgreement";
+import OwnerAgreementForm from "../AgreementForm/OwnerAgreement";
 
-function ModalContainer({ isOpen, onClose }) {
+function ModalContainer({ownerId, ownerEmail, isOpen, onClose, isOwner=false, clientName, cloudinaryUrl, isSubmit }) {
+
+  const submitClicked = () => {
+    isSubmit()
+  }
 
   return (
     <Modal isCentered isOpen={isOpen} onClose={onClose}>
@@ -11,10 +17,14 @@ function ModalContainer({ isOpen, onClose }) {
       backdropBlur='2px'
     />
     <ModalContent>
-      <ModalHeader>Modal Title</ModalHeader>
+      <ModalHeader>Agreement form</ModalHeader>
       <ModalCloseButton />
       <ModalBody>
-        <Text>Custom backdrop filters!</Text>
+        { !isOwner ? 
+        <ClientAgreementForm ownerId={ownerId} ownerEmail={ownerEmail} onClose={onClose} />
+        :
+        <OwnerAgreementForm clientName={clientName} cloudinaryUrl={cloudinaryUrl} submitClicked={submitClicked} />
+        }
       </ModalBody>
       <ModalFooter>
         <Button onClick={onClose}>Close</Button>
