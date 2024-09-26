@@ -1,4 +1,6 @@
 import {
+  Badge,
+  Box,
   Button,
   Card,
   CardBody,
@@ -10,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 
-const CardContainer = ({ name, email, contact_no, ownershop, handleCardClicked }) => {
+const CardContainer = ({ name, email="abc@gmail.com", contact_no='123456789', ownershop,status, handleCardClicked }) => {
   const [ownerPicked, setOwnerPicked] = useState(false);
 
   const checkCardClicked = () => {
@@ -29,9 +31,16 @@ const CardContainer = ({ name, email, contact_no, ownershop, handleCardClicked }
         <CardBody>
           <Text>{email}</Text>
           <Text>{contact_no}</Text>
+          <Box>
+            {status  && (
+              status == 'APPLIED' ?
+              <Badge>{status}</Badge> :
+              <Badge colorScheme='green'>{status}</Badge>
+            )}
+          </Box>
         </CardBody>
         <CardFooter>
-        <Button onClick={checkCardClicked}>{name}</Button>
+        <Button onClick={checkCardClicked}>{name ? name : "un-known"}</Button>
         </CardFooter>
       </Card>
     </>

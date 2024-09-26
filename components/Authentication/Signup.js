@@ -15,26 +15,67 @@ import {
 import { useState } from "react";
 import AuthenticationService from "../../services/authentication.service";
 import { useMutation } from "react-query";
+import { useUserStore } from "../../stores/user.store";
+import LocalStorageService from "../../services/localstorage.service";
   
   function Signup({showLogin}) {
 
     const [user, setUser] = useState("");
+    const {userData} = useUserStore((state) => state)
     const toast = useToast();
 
       const handleFormSubmit = async (formData) => {
         console.log(formData," ", user)
         const data = {
-            name: formData.name,
-            email: formData.email,
-            password:formData.password,
-            contact_no: formData.contact_no,
-            roles: [user]
-        }
+          name: formData.name,
+          email: formData.email,
+          password:formData.password,
+          contact_no: formData.contact_no,
+          roles: [user]
+      }
+
+        if(user == 'CLIENT') {
+          console.log("userdata and localStorage: ",userData?.jwtToken);
+          console.log("Local storage: ",LocalStorageService.get('jwtToken'))
+          LocalStorageService.remove("jwtToken")
+          
          getDataForRegistration(data);
         console.log(data)
+      } else if (user == 'OWNER') {
+        console.log("userdata and localStorage: ",userData?.jwtToken); 
+        LocalStorageService.remove("jwtToken")
+       getDataForRegistrationOfOwner(data);
+      console.log(data)
+      }
       // Api to check whether user is present or not; use formdata.name, formdata.password
       // showLogin();
     };
+
+    const { mutate: getDataForRegistrationOfOwner} = useMutation(AuthenticationService.registerOwnerWithUserName, {
+      onSuccess: (data) => {
+        console.log(data);
+        toast({
+          title: 'Register Successful',
+          description: "We've created your account for you.",
+          status: 'success',
+          duration: 2000,
+          position: 'top',
+          isClosable: true,
+        })
+        showLogin();
+      },
+      onError: (error) => {
+        toast({
+          title: 'Register Un-successful',
+          description: "We've created your account for you.",
+          status: 'error',
+          duration: 2000,
+          position: 'top',
+          isClosable: true,
+        })
+        console.log(error)
+      }
+    })
 
     const { mutate: getDataForRegistration} = useMutation(AuthenticationService.registerClientWithUsername , {
       onSuccess: (data) => {
@@ -118,9 +159,15 @@ import { useMutation } from "react-query";
             </FormControl>
   
             <HStack>
-            <Button onClick={() => setUser("CLIENT")}>Client</Button>
-            <Button onClick={() => setUser("OWNER")}>Owner</Button>
-            </HStack> 
+            <Button onClick={() => setUser("CLIENT")} 
+              bg={user == "CLIENT" ? "yellow.400" : "gray.200"}
+              color={"black"}
+              >Client</Button>
+            <Button onClick={() => setUser("OWNER")}
+              bg={user == "OWNER" ? "yellow.400" : "gray.200"}
+              color={"black"}
+              >Owner</Button>
+            </HStack>
             <Stack direction={["column", "row"]} w="full" spacing={5}>
               <Button type="submit" variant="primary" color={"#FFD76F"} bg={"grey"}>
                 Register

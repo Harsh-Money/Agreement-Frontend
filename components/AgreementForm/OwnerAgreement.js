@@ -1,0 +1,83 @@
+import { Box, Button, Checkbox, Link, Text, useToast } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { useOwnerBasket } from "../../stores/ownerBasket.store";
+import { useMutation } from "react-query";
+import Owner from "../../services/owner.service";
+import { useAgreementStore } from "../../stores/agreement.store";
+
+const OwnerAgreementForm = ({clientName, cloudinaryUrl="www.cloudinary.com", submitClicked}) => {
+    const [agreementAccepted, setAgreementAccepted] = useState(false);
+    const {setOwnerBasket, ownerBasket, clearOwnerBasket} = useOwnerBasket((state) => state);
+    const {AgreementDetails, setAgreementDetails, clearAgreementDetails} = useAgreementStore((state) => state);
+    const [isApproved, setIsApproved] = useState(false);
+
+    const toast = useToast();
+
+    const {mutate: setAgreementIdForApproval} = useMutation((id) => Owner.approveAgreementByOwner(id), {
+        onSuccess: (data) => {
+                setIsApproved(true);
+                console.log(data)
+                toast({
+                    title: 'Successfully approved agreement',
+                    description: `Done.....`,
+                    status: 'success',
+                    duration: 2000,
+                    position: 'top',
+                    isClosable: true,
+                  })
+            
+        },
+        onError: (error) => {
+            toast({
+                title: 'Didnot approve agreement',
+                description: "something went wrong.",
+                status: 'error',
+                duration: 2000,
+                position: 'top',
+                isClosable: true,
+              })
+        }
+    })
+
+    const checkSubmitClick =() => {
+        if (agreementAccepted == true) {
+            console.log(ownerBasket)
+            console.log(AgreementDetails);
+            if(AgreementDetails != null){
+                setAgreementIdForApproval(AgreementDetails)
+            } else{
+                toast({
+                    title: 'Didnot got agreement Id',
+                    description: "Try again.",
+                    status: 'error',
+                    duration: 2000,
+                    position: 'top',
+                    isClosable: true,
+                  })
+            }
+        } else {
+            console.log(agreementAccepted)
+            alert("Please accept the agreement");
+        }
+    }
+
+    useEffect(() => {
+        if(isApproved == true){
+            submitClicked();
+        }
+    },[isApproved])
+
+    return (
+        <Box ml={5} mt={3}>
+            <Text>Client name: <Text display={"inline"}>{clientName}</Text></Text>
+            <Text>Cloudinary URL: <Link href={cloudinaryUrl} display={"inline"} isExternal>Link</Link></Text>
+            <Checkbox size='md' 
+            colorScheme='green' 
+            onChange={() => {console.log("checkbox clicked");setAgreementAccepted(!agreementAccepted)}}>
+                Checkbox
+            </Checkbox>
+            <Button onClick={checkSubmitClick}>Submit</Button> 
+        </Box>
+    )
+}
+export default OwnerAgreementForm;

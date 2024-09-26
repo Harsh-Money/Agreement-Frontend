@@ -7,21 +7,61 @@ import { useUserStore } from "../stores/user.store";
 import { useEffect, useState } from "react";
 import CardContainer from "../components/common/CardContainer";
 import ModalContainer from "../components/common/ModalContainer";
+import Client from "../services/client.service";
 
 export default function Overview() {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const { ownerBasket, setOwnerBasket } = useOwnerBasket((state) => state);
-    const userData = useUserStore((state) => state.userData);
+    const {userData, clientData, setClientData} = useUserStore((state) => state);
     const toast = useToast();
+    const [clickedCardDetails, setClickedCardDetails] = useState({ id: null, email: null})
 
-    const cardClicked = () => {
+    const cardClicked = (id,email) => {
         console.log("cardClicked")
+        setClickedCardDetails({
+            id: id,
+            email: email
+        })
         onOpen()
     }
+
+    const {mutate: clientDataByName} = useMutation(Client.getByName, {
+        onSuccess: (data) => {
+            setClientData({
+                id: data?.id,
+                clientName: data?.name,
+                clientEmail: data?.email,
+            })
+            toast({
+                title: 'Client Data set',
+                description: `Done.....`,
+                status: 'success',
+                duration: 2000,
+                position: 'top',
+                isClosable: true,
+              })
+        },
+        onError: (error) => {
+            toast({
+                title: 'Client Data not set',
+                description: "Fault in setting data.",
+                status: 'error',
+                duration: 2000,
+                position: 'top',
+                isClosable: true,
+              })
+
+    }})
+
 
     const {mutate: overviewData, isLoading, data} = useMutation(OverviewServices.getOwner, {
         onSuccess: (data) => {
             setOwnerBasket(data);
+            const c = {
+                name: clientData?.clientName
+            }
+            console.log(clientData)
+            clientDataByName(c)
         },
         onError: (error) => {
             toast({
@@ -37,6 +77,7 @@ export default function Overview() {
 
       useEffect(() => {
         overviewData();
+        
       },[]);
 
     if (isLoading) {
@@ -54,7 +95,7 @@ export default function Overview() {
                         email={owner.email} 
                         contact_no={owner?.contact_no} 
                         ownershop={owner.ownersShop} 
-                        handleCardClicked={cardClicked} 
+                        handleCardClicked={() => cardClicked(owner.id, owner.email)} 
                         />
                     </Box>
                 ))
@@ -63,7 +104,7 @@ export default function Overview() {
             )}
         </SimpleGrid>
         
-        <ModalContainer isOpen={isOpen} onClose={onClose} />
+        <ModalContainer ownerId={clickedCardDetails.id} ownerEmail={clickedCardDetails.email}  isOpen={isOpen} onClose={onClose} />
 
         
         </Box>

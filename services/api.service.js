@@ -8,7 +8,7 @@ const getHeaders = (headers) => {
   return {
     "Access-Control-Allow-Origin": process.env.NEXT_PUBLIC_API_BASE_URL,
     "Content-Type": "application/json",
-    ...((userData?.jwtToken || LocalStorageService.get("jwtToken")) && { "Authorization": `Bearer ${LocalStorageService.get("jwtToken")}` }),
+    ...((userData?.jwtToken || LocalStorageService.get("jwtToken") != null) && { "Authorization": `Bearer ${LocalStorageService.get("jwtToken")}` }),
     // "X-ID-TOKEN": useUserStore.getState().userData?.idToken,
     ...headers,
   };
@@ -50,6 +50,7 @@ let engine = {
       body: JSON.stringify(data),
       credentials: "include",
     });
+    console.log("header of post req. : ",getHeaders(opt.headers))
     if (!res.ok) {
       let error = await res.json();
     //   error = serializeFetchError(error);
