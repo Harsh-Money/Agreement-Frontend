@@ -1,4 +1,4 @@
-import { Button, FormControl, FormErrorMessage, Stack, useToast, VStack } from "@chakra-ui/react";
+import { Button, Container, FormControl, FormErrorMessage, Input, Stack, Text, useToast, VStack } from "@chakra-ui/react";
 import { Formik } from "formik";
 import { ImageFile, NameInput, PasswordInput } from "../Authentication";
 import * as Yup from "yup";
@@ -6,11 +6,29 @@ import { useMutation } from "react-query";
 import Agreement from "../../services/Agreement.service";
 import { useState } from "react";
 import { useUserStore } from "../../stores/user.store";
+import LocalStorageService from "../../services/localstorage.service";
 
 export default function ClientAgreementForm ({ ownerId, ownerEmail, onClose }) {
 
     const [agreementName, setAgreementName] = useState(null);
     const {userData, clientData, setClientData} = useUserStore((state) => state);
+    const [submitClicked, setSubmitClicked] = useState(false);
+    const [submitValue, setSubmitValue] = useState({});
+    const [inputValue, setInputValue] = useState('');
+
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleSubmitOfSignature = () => {
+    if(inputValue == LocalStorageService.get("jwtToken")){
+        setSubmitClicked(false);
+        handleLogin(submitValue);
+    }
+    else{
+    console.log('Input Value:', inputValue); 
+    }
+  };
 
     const toast = useToast();
     const LoginSchema = Yup.object({
@@ -89,8 +107,8 @@ export default function ClientAgreementForm ({ ownerId, ownerEmail, onClose }) {
 
     // Function to handle form submission and construct FormData
     const handleLogin = async (formdata) => {
+        console.log("inside handle login: ",formdata)
         setAgreementName(formdata.agreementname)
-        // Create a new FormData object
         const formData = new FormData();
         
         // Append the file and other parameters to FormData
@@ -102,6 +120,7 @@ export default function ClientAgreementForm ({ ownerId, ownerEmail, onClose }) {
       };
 
     return (
+        <>
         <Formik
             initialValues={{
                 agreementname: "",
@@ -109,7 +128,10 @@ export default function ClientAgreementForm ({ ownerId, ownerEmail, onClose }) {
             }}
             validationSchema={LoginSchema}
             onSubmit={(values) => {
-                handleLogin(values); // Call handleLogin on submit
+                setSubmitValue(values);
+                setSubmitClicked(true);
+                // if (submitClicked)
+                // handleLogin(values); // Call handleLogin on submit
             }}
         >
         {({ handleSubmit, errors, touched, getFieldProps, setFieldValue }) => (
@@ -147,5 +169,18 @@ export default function ClientAgreementForm ({ ownerId, ownerEmail, onClose }) {
             </VStack>
         )}
         </Formik>
+
+        {submitClicked ?
+        <Container>
+        <Text>Enter the Signature</Text>
+        <Input
+            placeholder='Enter the Signature'
+            value={inputValue}
+            onChange={handleInputChange}
+        />
+    <Button onClick={handleSubmitOfSignature}>Submit</Button>
+    </Container> : <></>
+    }
+        </>
     );
 }
