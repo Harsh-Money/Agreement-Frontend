@@ -1,15 +1,33 @@
-import { Box, Button, Checkbox, Link, Text, useToast } from "@chakra-ui/react";
+import { Box, Button, Checkbox, Container, Input, Link, Stack, Text, useToast } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useOwnerBasket } from "../../stores/ownerBasket.store";
 import { useMutation } from "react-query";
 import Owner from "../../services/owner.service";
 import { useAgreementStore } from "../../stores/agreement.store";
+import LocalStorageService from "../../services/localstorage.service";
 
 const OwnerAgreementForm = ({clientName, cloudinaryUrl="www.cloudinary.com", submitClicked}) => {
     const [agreementAccepted, setAgreementAccepted] = useState(false);
     const {setOwnerBasket, ownerBasket, clearOwnerBasket} = useOwnerBasket((state) => state);
     const {AgreementDetails, setAgreementDetails, clearAgreementDetails} = useAgreementStore((state) => state);
     const [isApproved, setIsApproved] = useState(false);
+    const [submitClickedForSignature, setSubmitClickedForSignature] = useState(false);
+
+    const [inputValue, setInputValue] = useState('');
+
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleSubmitOfSignature = () => {
+    if(inputValue == LocalStorageService.get("jwtToken")){
+        setSubmitClickedForSignature(false);
+        checkSubmitClick();
+    }
+    else{
+    console.log('Input Value:', inputValue); 
+    }
+  };
 
     const toast = useToast();
 
@@ -68,6 +86,7 @@ const OwnerAgreementForm = ({clientName, cloudinaryUrl="www.cloudinary.com", sub
     },[isApproved])
 
     return (
+        <Stack>
         <Box ml={5} mt={3}>
             <Text>Client name: <Text display={"inline"}>{clientName}</Text></Text>
             <Text>Cloudinary URL: <Link href={cloudinaryUrl} display={"inline"} isExternal>Link</Link></Text>
@@ -76,8 +95,20 @@ const OwnerAgreementForm = ({clientName, cloudinaryUrl="www.cloudinary.com", sub
             onChange={() => {console.log("checkbox clicked");setAgreementAccepted(!agreementAccepted)}}>
                 Checkbox
             </Checkbox>
-            <Button onClick={checkSubmitClick}>Submit</Button> 
+            <Button onClick={() => setSubmitClickedForSignature(true)}>Submit</Button> 
         </Box>
+        {submitClickedForSignature ?
+        <Container>
+        <Text>Enter the Signature</Text>
+        <Input
+            placeholder='Enter the Signature'
+            value={inputValue}
+            onChange={handleInputChange}
+        />
+    <Button onClick={handleSubmitOfSignature}>Submit</Button>
+    </Container> : <></>
+    }
+        </Stack>
     )
 }
 export default OwnerAgreementForm;
