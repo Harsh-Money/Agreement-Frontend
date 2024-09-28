@@ -1,4 +1,4 @@
-import { Box, SimpleGrid, Text, useDisclosure, useToast } from "@chakra-ui/react";
+import { Box, Button, Menu, MenuButton, MenuItem, MenuList, SimpleGrid, Text, useDisclosure, useToast } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { Mutation, useMutation } from "react-query";
 import Agreement from "../services/Agreement.service";
@@ -8,6 +8,8 @@ import CardContainer from "../components/common/CardContainer";
 import ModalContainer from "../components/common/ModalContainer";
 import Loading from "../components/common/Loading";
 import { useAgreementStore } from "../stores/agreement.store";
+import LocalStorageService from "../services/localstorage.service";
+import { HamburgerIcon } from "@chakra-ui/icons";
 
 export default function OwnerOverview() {
 
@@ -21,7 +23,31 @@ export default function OwnerOverview() {
                                                                          clientname: null,
                                                                          cloudinaryurl: null      
                                                                          });
-    const [agreementsWithOwner, setAgreementsWithOwner] = useState({ data: null})                                                                     
+    const [agreementsWithOwner, setAgreementsWithOwner] = useState({ data: null});
+    
+    const copySignature = () => {
+        navigator.clipboard.writeText(LocalStorageService.get("jwtToken"))
+        .then(() => {
+            toast({
+                title: 'Signature copied to clipboard',
+                description: `Done...`,
+                status: 'success',
+                duration: 2000,
+                position: 'top',
+                isClosable: true,
+              })
+          })
+          .catch((err) => {
+            toast({
+                title: 'Signature not copied, try again...',
+                description: "Fault...",
+                status: 'error',
+                duration: 2000,
+                position: 'top',
+                isClosable: true,
+              })
+          });
+    }
 
     const {mutate:setNameOfOwner} = useMutation(Owner.getByName, {
         onSuccess: (data) => {
@@ -127,6 +153,17 @@ export default function OwnerOverview() {
     return (
         <Box>
             <Text fontWeight={"bold"} fontSize={"x-large"} color={"white"}>Agreements</Text>
+            <Menu>
+                {({ isOpen }) => (
+                    <>
+                    <MenuButton isActive={isOpen} as={Button} rightIcon={<HamburgerIcon />}>
+                    </MenuButton>
+                    <MenuList>
+                        <MenuItem onClick={() => copySignature()}>Copy Signature</MenuItem>
+                    </MenuList>
+                    </>
+                )}
+                </Menu>
             <SimpleGrid columns={3} spacing={4}>
             {agreementsWithOwner.data && (agreementsWithOwner.data).length > 0 ? (
                 (agreementsWithOwner.data).map((agreement, index) => (
