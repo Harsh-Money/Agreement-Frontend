@@ -42,6 +42,11 @@ const Agreement = {
       return ApiEngine.get(getAllAgreementUrl)
     },
 
+    getAllAgreementOfClient : (clientId) => {
+      const getAllAgreementUrl = urlJoin(BASE_URL, `/agreement/all-agreement-of-clientid/${clientId}`)
+      return ApiEngine.get(getAllAgreementUrl)
+    }
+
     
 }
 export default Agreement;

@@ -1,4 +1,4 @@
-import { Box, HStack, SimpleGrid, Text, useDisclosure, useToast } from "@chakra-ui/react";
+import { Box, Button, HStack, Menu, MenuButton, MenuItem, MenuList, SimpleGrid, Text, useDisclosure, useToast } from "@chakra-ui/react";
 import { useMutation, useQuery } from "react-query";
 import OverviewServices from "../services/overview.service";
 import { useOwnerBasket } from "../stores/ownerBasket.store";
@@ -8,13 +8,41 @@ import { useEffect, useState } from "react";
 import CardContainer from "../components/common/CardContainer";
 import ModalContainer from "../components/common/ModalContainer";
 import Client from "../services/client.service";
+import { HamburgerIcon } from "@chakra-ui/icons";
+import LocalStorageService from "../services/localstorage.service";
+import { useRouter } from "next/router";
 
 export default function Overview() {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const { ownerBasket, setOwnerBasket } = useOwnerBasket((state) => state);
     const {userData, clientData, setClientData} = useUserStore((state) => state);
-    const toast = useToast();
     const [clickedCardDetails, setClickedCardDetails] = useState({ id: null, email: null})
+    const toast = useToast();
+    const route = useRouter();
+
+    const copySignature = () => {
+        navigator.clipboard.writeText(LocalStorageService.get("jwtToken"))
+        .then(() => {
+            toast({
+                title: 'Signature copied to clipboard',
+                description: `Done...`,
+                status: 'success',
+                duration: 2000,
+                position: 'top',
+                isClosable: true,
+              })
+          })
+          .catch((err) => {
+            toast({
+                title: 'Signature not copied, try again...',
+                description: "Fault...",
+                status: 'error',
+                duration: 2000,
+                position: 'top',
+                isClosable: true,
+              })
+          });
+    }
 
     const cardClicked = (id,email) => {
         console.log("cardClicked")
@@ -86,7 +114,23 @@ export default function Overview() {
 
     return (
         <Box>
-            <Text fontWeight={"bold"} fontSize={"x-large"} color={"white"}>Owner Available of which you can have agreement with, you just need as a photo of agreement , based on your demand.</Text>
+            <Text fontWeight={"bold"} fontSize={"x-large"} color={"white"}>Owner Available of which you can have 
+                agreement with, you just need as a photo of agreement , based on your demand.</Text>
+                <Menu>
+                {({ isOpen }) => (
+                    <>
+                    <MenuButton isActive={isOpen} as={Button} rightIcon={<HamburgerIcon />}>
+                    </MenuButton>
+                    <MenuList>
+                        <MenuItem onClick={() => copySignature()}>Copy Signature</MenuItem>
+                        <MenuItem onClick={() => route.push({
+                            pathname: '/client_agreements_status',
+                            query: { id: clientData?.id }
+                        })}>Agreements Status</MenuItem>
+                    </MenuList>
+                    </>
+                )}
+                </Menu>
             <SimpleGrid columns={3} spacing={4}>
             {data && data.length > 0 ? (
                 data.map((owner, index) => (
